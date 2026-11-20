@@ -25,4 +25,4 @@ jobs:
           cd "$(mktemp -d)"
           npm init --yes
           npm install --offline --ignore-scripts "$RUNNER_TEMP/$archive"
-          node --input-type=module -e "import {createVimNav} from 'vimweb'; import 'vimweb/auto'; if (typeof createVimNav !== 'function') process.exit(1)"
+          node --input-type=module -e "import {createVimNav} from '@mhariri/vimweb'; import '@mhariri/vimweb/auto'; if (typeof createVimNav !== 'function') process.exit(1)"
