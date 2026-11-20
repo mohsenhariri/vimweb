@@ -108,19 +108,6 @@ npm test
 npm pack --dry-run
 ```
 
-`npm pack` produces a tarball that another project can install with `npm install /path/to/mhariri-vimweb-0.1.1.tgz`. The published files include the browser modules, TypeScript declarations, README and license. The demo, tests and repository workflow stay in the source repository.
-
-### Publish to npm
-
-For the first release, add a short-lived granular npm token as the `NPM_TOKEN` GitHub Actions secret. Give it **Read and write (publish and stage)** permission for **All Packages** and enable **Bypass two-factor authentication**. [npm token setup](https://docs.npmjs.com/creating-and-viewing-access-tokens/)
-
-Commit and push the release changes, then push a tag that matches the version in `package.json`. GitHub Actions runs the package checks before publishing.
-
-```sh
-git tag v0.1.1
-git push origin v0.1.1
-```
-
-After the first release, remove the Actions secret and revoke its token. Before the next release, configure **Trusted publishing** in the npm package settings with GitHub owner `mohsenhariri`, repository `vimweb`, workflow filename `publish.yml`, and **Allow npm publish** enabled. Push the next release tag within two days of configuring it. [npm trusted publishing setup](https://docs.npmjs.com/trusted-publishers/)
+`npm pack` produces a tarball that another project can install with `npm install /path/to/package.tgz`. The published files include the browser modules, TypeScript declarations, README and license. The demo, tests and repository workflow stay in the source repository.
 
 Inspired by [Vimium](https://github.com/philc/vimium) and [VimCode](https://github.com/mohsenhariri/vimcode). Released under the [MIT license](./LICENSE).

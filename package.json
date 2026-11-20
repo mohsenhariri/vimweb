@@ -1,6 +1,6 @@
 {
   "name": "@mhariri/vimweb",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Vim-style keyboard navigation and link hints for websites",
   "type": "module",
   "main": "./index.js",
