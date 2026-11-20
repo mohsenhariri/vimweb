@@ -6,20 +6,48 @@
   <title>Vimweb demo</title>
   <style>
     :root { color-scheme: light dark; font: 1.05rem/1.6 system-ui, sans-serif; }
+    :root[data-site-mode="light"] { color-scheme: light; }
+    :root[data-site-mode="dark"] { color-scheme: dark; }
     body { max-width: 38rem; margin: 8vh auto; padding: 0 1.25rem; }
     h1 { line-height: 1.15; }
     textarea { box-sizing: border-box; display: block; width: 100%; padding: .6rem; font: inherit; }
     button, summary { cursor: pointer; }
     button { padding: .4rem .8rem; font: inherit; }
     section { margin-block: 2rem; }
+    fieldset { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; margin-block: 1.25rem; }
+    fieldset label { display: grid; gap: .15rem; }
+    select { font: inherit; }
     :focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
   </style>
   <script type="module" src="../auto.js"></script>
+  <script type="module">
+    const controls = document.querySelector('#appearance');
+    function apply() {
+      const root = document.documentElement.dataset;
+      root.vimNavTemplate = controls.querySelector('#template').value;
+      root.vimNavPalette = controls.querySelector('#palette').value;
+      root.siteMode = controls.querySelector('#site-mode').value;
+    }
+    controls.addEventListener('change', apply);
+    apply();
+  </script>
 </head>
 <body>
   <main>
     <h1>Vimweb demo</h1>
     <p>Enable keyboard shortcuts, close the guide, and press <kbd>f</kbd>. Type the label next to the footnote to follow it, or choose the notes field and start typing.</p>
+    <fieldset id="appearance">
+      <legend>Appearance</legend>
+      <label>Template
+        <select id="template"><option value="classic">Classic</option><option value="minimal">Minimal</option><option value="terminal">Terminal</option></select>
+      </label>
+      <label>Palette
+        <select id="palette"><option value="amber">Amber</option><option value="ocean">Ocean</option><option value="forest">Forest</option></select>
+      </label>
+      <label>Site theme
+        <select id="site-mode"><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+      </label>
+    </fieldset>
     <button type="button" data-vim-nav-launcher hidden>Keyboard shortcuts</button>
     <section>
       <h2 id="reading">Reading with hints</h2>

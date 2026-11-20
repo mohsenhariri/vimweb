@@ -1,8 +1,12 @@
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
+import manifest from '../package.json' with { type: 'json' };
 
 const root = new URL('../', import.meta.url);
-const files = new Set(['/test/fixture.html', '/demo/index.html', '/auto.js', '/index.js', '/hints.js', '/help.js']);
+const files = new Set([
+  '/test/fixture.html', '/demo/index.html',
+  ...manifest.files.filter(name => name.endsWith('.js')).map(name => '/' + name),
+]);
 const port = Number(process.argv[2] || 8000);
 
 createServer(async (request, response) => {

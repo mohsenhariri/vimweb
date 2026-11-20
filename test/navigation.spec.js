@@ -80,6 +80,94 @@ test('skips unusable, excluded, occluded and offscreen targets', async ({ page }
   await expect(page).toHaveTitle('Visible activated');
 });
 
+test('activates open-shadow and slotted controls once and keeps light DOM hint order', async ({ page }) => {
+  await install(page, `
+    <button>First</button>
+    <outer-actions><button slot="action">Slotted</button></outer-actions>
+    <button>Last</button>
+    <focusable-host tabindex="0" style="display:inline-block;vertical-align:top"></focusable-host>
+    <ignored-host class="reserved"></ignored-host>
+  `, { exclude: '.reserved' });
+  await page.evaluate(() => {
+    const outer = document.querySelector('outer-actions').attachShadow({ mode: 'open' });
+    outer.innerHTML = '<inner-actions><slot name="action" slot="forwarded"></slot></inner-actions>';
+    const inner = outer.querySelector('inner-actions').attachShadow({ mode: 'open' });
+    inner.innerHTML = `
+      <slot name="forwarded"></slot>
+      <button aria-label="Deep" style="padding:0;border:0"><span aria-hidden="true">Icon</span></button>
+      <div data-vim-nav-ignore><button>Ignored</button></div>
+      <button class="reserved">Reserved</button>
+    `;
+    const focusable = document.querySelector('focusable-host').attachShadow({ mode: 'open' });
+    focusable.innerHTML = '<button style="display:block">Inside focusable host</button>';
+    const ignored = document.querySelector('ignored-host').attachShadow({ mode: 'open' });
+    ignored.innerHTML = '<button>Inside excluded host</button>';
+    window.picks = [];
+    document.addEventListener('click', event => {
+      const target = event.composedPath()[0];
+      window.picks.push(target.getAttribute('aria-label') || target.textContent);
+    });
+  });
+  const labels = await (await showHints(page, 5)).allTextContents();
+  for (const [index, code] of labels.entries()) {
+    if (index) await showHints(page, 5);
+    await page.keyboard.type(code);
+    await expect(page.locator(hint)).toHaveCount(0);
+  }
+  const picks = await page.evaluate(() => window.picks);
+  expect(picks.slice(0, 3)).toEqual(['First', 'Slotted', 'Last']);
+  expect(picks.slice(3).sort()).toEqual(['Deep', 'Inside focusable host']);
+});
+
+test('rechecks shadow targets for occlusion and removal before activation', async ({ page }) => {
+  await install(page, '<action-panel></action-panel>');
+  await page.evaluate(() => {
+    const root = document.querySelector('action-panel').attachShadow({ mode: 'open' });
+    root.innerHTML = '<button>Pick</button>';
+    window.clicks = 0;
+    root.querySelector('button').onclick = () => window.clicks++;
+  });
+  const code = await (await showHints(page, 1)).textContent();
+  await page.evaluate(() => {
+    const cover = document.createElement('div');
+    cover.style.cssText = 'position:fixed;inset:0;background:white';
+    document.querySelector('action-panel').shadowRoot.append(cover);
+  });
+  await page.keyboard.type(code);
+  expect(await page.evaluate(() => window.clicks)).toBe(0);
+  await page.evaluate(() => document.querySelector('action-panel').shadowRoot.querySelector('div').remove());
+  await showHints(page, 1);
+  await page.evaluate(() => document.querySelector('action-panel').remove());
+  await page.keyboard.type(code);
+  expect(await page.evaluate(() => window.clicks)).toBe(0);
+});
+
+test('cancels open hints when a panel scrolls inside a shadow tree', async ({ page }) => {
+  await install(page, '<scroll-panel></scroll-panel>');
+  await page.evaluate(() => {
+    const root = document.querySelector('scroll-panel').attachShadow({ mode: 'open' });
+    root.innerHTML = `<section style="height:80px;overflow:auto">
+      <button>Visible</button><div style="height:300px"></div><button>Below</button>
+    </section>`;
+  });
+  const hints = await showHints(page, 1);
+  await page.locator('scroll-panel section').evaluate(pane => pane.scrollTop = pane.scrollHeight);
+  await expect(hints).toHaveCount(0);
+  await showHints(page, 1);
+});
+
+test('the first shortcut works after a page replaces its body during hint mode', async ({ page }) => {
+  await install(page, '<button>Original</button>');
+  await showHints(page, 1);
+  await page.evaluate(() => {
+    const next = document.createElement('body');
+    next.innerHTML = '<button>Replacement</button>';
+    document.body.replaceWith(next);
+  });
+  await page.keyboard.press('?');
+  await expect(dialog(page)).toBeVisible();
+});
+
 test('refreshes candidates for each session and never activates a hidden or detached target', async ({ page }) => {
   await install(page, '<button>Action</button>');
   await page.evaluate(() => {
@@ -245,6 +333,35 @@ test('help opens while disabled, supports keyboard dismissal and restores focus'
   await expect(switcher).toBeChecked();
   await help.getByRole('button', { name: 'Close' }).click();
   await expect(origin).toBeFocused();
+});
+
+for (const method of ['showHelp', 'destroy']) {
+  test(`honors a page focus handler calling ${method} as help opens`, async ({ page }) => {
+    await install(page, '<button>Settings</button>');
+    const hosts = await page.evaluate(method => {
+      document.addEventListener('focusin', () => window.nav[method](), { once: true });
+      window.nav.showHelp();
+      return document.querySelectorAll('[data-vim-nav-help]').length;
+    }, method);
+    expect(hosts).toBe(method === 'destroy' ? 0 : 1);
+    await page.evaluate(() => window.nav.destroy());
+    await expect(page.locator('[data-vim-nav-help]')).toHaveCount(0);
+  });
+}
+
+test('can reopen help from the focus handler of the returning control', async ({ page }) => {
+  await install(page, '<button>Settings</button>');
+  const launcher = page.getByRole('button', { name: 'Settings', exact: true });
+  await launcher.focus();
+  await page.evaluate(() => {
+    window.nav.showHelp();
+    document.querySelector('button').addEventListener('focusin', window.nav.showHelp, { once: true });
+  });
+  await page.keyboard.press('Escape');
+  await expect(dialog(page)).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-vim-nav-help]')).toHaveCount(0);
+  await expect(launcher).toBeFocused();
 });
 
 test('auto entry starts disabled and remembers changes on reload', async ({ page }) => {

@@ -30,12 +30,18 @@ try {
     await mkdir(path.dirname(destination), { recursive: true });
     await copyFile(path.join(root, filename), destination);
   }
-  const index = path.join(stage, 'index.html');
-  const html = await readFile(index, 'utf8');
-  await writeFile(index, html
-    .replaceAll('{{VERSION}}', manifest.version)
-    .replaceAll('{{TARBALL}}', archive)
-    .replaceAll('{{HOMEPAGE}}', manifest.homepage));
+  const demo = path.join(stage, 'demo');
+  await mkdir(demo);
+  const demoHtml = await readFile(path.join(root, 'demo', 'index.html'), 'utf8');
+  await writeFile(path.join(demo, 'index.html'), demoHtml.replace('src="../auto.js"', 'src="../lib/auto.js"'));
+  for (const page of ['index.html', 'docs/index.html']) {
+    const index = path.join(stage, page);
+    const html = await readFile(index, 'utf8');
+    await writeFile(index, html
+      .replaceAll('{{VERSION}}', manifest.version)
+      .replaceAll('{{TARBALL}}', archive)
+      .replaceAll('{{HOMEPAGE}}', manifest.homepage));
+  }
 
   // Keep a failed build from replacing the last complete preview.
   await rm(dist, { recursive: true, force: true });

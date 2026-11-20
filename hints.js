@@ -1,7 +1,8 @@
 const controls = 'a[href],button,input,select,textarea,summary,[role="button" i],[role="link" i]';
 const editable = '[contenteditable=""],[contenteditable="true" i],[contenteditable="plaintext-only" i]';
 const targets = `${controls},${editable},[tabindex]`;
-const ignored = '[hidden],[inert],[aria-hidden="true" i],[aria-disabled="true" i],[data-vim-nav-ignore]';
+const ignored = '[hidden],[inert],[data-vim-nav-ignore]';
+const unavailable = '[aria-hidden="true" i],[aria-disabled="true" i]';
 const clickInputs = new Set(['button', 'checkbox', 'color', 'file', 'image', 'radio', 'reset', 'submit']);
 
 function isTarget(element) {
@@ -12,14 +13,25 @@ function isTarget(element) {
   return element.matches(controls) || element.matches(editable) || element.tabIndex >= 0;
 }
 
-function ownsPoint(element, x, y, exclude) {
-  const hit = element.ownerDocument.elementFromPoint(x, y);
-  if (!hit || !element.contains(hit) || hit.closest(exclude)) return false;
+export function parentOf(element) {
+  return element.assignedSlot || element.parentElement || element.getRootNode().host;
+}
 
-  // A nested control has its own action. Decorative children belong to their control.
-  let owner = hit.closest(targets);
-  while (owner && !isTarget(owner)) owner = owner.parentElement?.closest(targets);
-  return owner === element;
+function ownsPoint(element, x, y, exclude) {
+  let hit = element.ownerDocument.elementFromPoint(x, y);
+  while (hit?.shadowRoot) {
+    const root = hit.shadowRoot;
+    const inner = root.elementFromPoint?.(x, y);
+    if (inner?.getRootNode() !== root) break;
+    hit = inner;
+  }
+  // An aria-hidden icon can fill its button. The closest actionable ancestor
+  // owns that point, even when a component projects the icon through a slot.
+  for (let node = hit; node; node = parentOf(node)) {
+    if (node.matches(exclude)) return false;
+    if (node.matches(targets) && isTarget(node)) return node === element;
+  }
+  return false;
 }
 
 function sampleRects(element, rects, bounds, exclude) {
@@ -38,8 +50,7 @@ function sampleRects(element, rects, bounds, exclude) {
 }
 
 function visiblePoint(element, exclude, originalPoint) {
-  if (!element.isConnected || !isTarget(element) || element.matches(':disabled,input[type="hidden" i]') ||
-      element.closest(exclude)) return null;
+  if (!element.isConnected || !isTarget(element) || element.matches(':disabled,input[type="hidden" i]')) return null;
 
   const doc = element.ownerDocument;
   const view = doc.defaultView;
@@ -62,7 +73,8 @@ function visiblePoint(element, exclude, originalPoint) {
   if (style.visibility !== 'visible') return null;
 
   let clip;
-  for (let node = element; node; node = node.parentElement) {
+  for (let node = element; node; node = parentOf(node)) {
+    if (node.matches(exclude) || node.matches(unavailable)) return null;
     const css = node === element ? style : view.getComputedStyle(node);
     if (css.opacity === '0' || css.contentVisibility === 'hidden') return null;
     if (originalPoint || node === element || node === doc.documentElement) continue;
@@ -98,11 +110,12 @@ function makeLabel(index, alphabet, width) {
 }
 
 function activate(element, point, exclude) {
+  const doc = element.ownerDocument;
   element.focus?.({ preventScroll: true });
   if (element.isContentEditable || element.matches('textarea,select') ||
       (element.localName === 'input' && !clickInputs.has(element.type))) return;
   // Focus handlers can synchronously detach, cover or disable a control.
-  if (!visiblePoint(element, exclude, point)) return;
+  if (element.ownerDocument !== doc || !visiblePoint(element, exclude, point)) return;
   if (typeof element.click === 'function') element.click();
   else {
     // SVG anchors have native link activation but lack HTMLElement.click().
@@ -116,11 +129,14 @@ const overlayCss = `
     display: block !important; z-index: 2147483647 !important; pointer-events: none !important;
     font: bold 13px/17px ui-monospace, monospace !important; }
   :host::backdrop { background: transparent; pointer-events: none; }
-  span { position: absolute; box-sizing: border-box; padding: 0 3px; color: #211800;
-    background: #ffdb68; border: 1px solid #372800; border-radius: 3px;
+  span { position: absolute; box-sizing: border-box; padding: 0 3px;
+    color: var(--vim-nav-hint-text, var(--_hint-text)); background: var(--vim-nav-hint-bg, var(--_hint-bg));
+    border: 1px solid currentColor; border-radius: 3px;
     box-shadow: 0 1px 3px #0008; text-transform: uppercase; white-space: nowrap; }
   span[hidden] { display: none; }
-  @media (prefers-color-scheme: dark) { span { background: #ffe79b; border-color: #4e3300; } }
+  :host([data-template="minimal"]) span { border-radius: 1em; box-shadow: none; }
+  :host([data-template="terminal"]) span { border-radius: 0; box-shadow: 2px 2px currentColor; }
+  @media (forced-colors: active) { span { background: Canvas; color: CanvasText; border-color: CanvasText; } }
 `;
 
 function placeBadges(items, host) {
@@ -146,12 +162,20 @@ function placeBadges(items, host) {
 }
 
 /** The controller supplies a normalized alphabet of at least two distinct letters. */
-export function startHints(doc, { alphabet, exclude }, onClose) {
+export function startHints(doc, { alphabet, exclude, appearance }, onClose) {
   const skip = exclude ? `${ignored},${exclude}` : ignored;
   const items = [];
-  for (const target of doc.querySelectorAll(targets)) {
-    const point = visiblePoint(target, skip);
-    if (point) items.push({ target, point });
+  const roots = [doc];
+  for (const root of roots) {
+    for (const target of root.querySelectorAll(targets)) {
+      const point = visiblePoint(target, skip);
+      if (point) items.push({ target, point });
+    }
+    // Append open roots after their light DOM so existing targets keep their order.
+    const elements = doc.createTreeWalker(root, doc.defaultView.NodeFilter.SHOW_ELEMENT);
+    for (let node = elements.nextNode(); node; node = elements.nextNode()) {
+      if (node.shadowRoot) roots.push(node.shadowRoot);
+    }
   }
   if (!items.length) return null;
 
@@ -159,9 +183,7 @@ export function startHints(doc, { alphabet, exclude }, onClose) {
   host.setAttribute('data-vim-nav-hints', '');
   host.setAttribute('aria-hidden', 'true');
   const shadow = host.attachShadow({ mode: 'open' });
-  const sheet = new doc.defaultView.CSSStyleSheet();
-  sheet.replaceSync(overlayCss);
-  shadow.adoptedStyleSheets = [sheet];
+  const releaseAppearance = appearance.mount(host, overlayCss, close);
   let width = 1;
   while (alphabet.length ** width < items.length) width++;
   for (const [index, item] of items.entries()) {
@@ -171,7 +193,7 @@ export function startHints(doc, { alphabet, exclude }, onClose) {
     item.badge.textContent = item.label;
     shadow.append(item.badge);
   }
-  doc.documentElement.append(host);
+  doc.body.append(host);
   // A manual popover can paint above host popovers and fullscreen content
   // without moving focus or dismissing an already open menu.
   if (typeof host.showPopover === 'function') {
@@ -185,6 +207,10 @@ export function startHints(doc, { alphabet, exclude }, onClose) {
   const options = { signal: listeners.signal, capture: true };
   view.addEventListener('resize', close, options);
   view.addEventListener('scroll', close, options);
+  // Scroll events inside a shadow tree do not reach the window.
+  for (const root of roots) {
+    if (root !== doc) root.addEventListener('scroll', close, options);
+  }
   view.addEventListener('blur', close, { signal: listeners.signal });
   view.visualViewport?.addEventListener('resize', close, options);
   view.visualViewport?.addEventListener('scroll', close, options);
@@ -195,6 +221,7 @@ export function startHints(doc, { alphabet, exclude }, onClose) {
   function close() {
     if (listeners.signal.aborted) return;
     listeners.abort();
+    releaseAppearance();
     host.remove();
     onClose();
   }
@@ -230,7 +257,7 @@ export function startHints(doc, { alphabet, exclude }, onClose) {
     else if (matches[0].label === prefix) {
       const { target, point } = matches[0];
       close();
-      if (visiblePoint(target, skip, point)) activate(target, point, skip);
+      if (target.ownerDocument === doc && visiblePoint(target, skip, point)) activate(target, point, skip);
     } else {
       for (const item of items) item.badge.hidden = !item.label.startsWith(prefix);
     }

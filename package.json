@@ -1,6 +1,6 @@
 {
   "name": "@mhariri/vimweb",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Vim-style keyboard navigation and link hints for websites",
   "type": "module",
   "main": "./index.js",
@@ -10,7 +10,7 @@
     "./auto": { "types": "./auto.d.ts", "import": "./auto.js" }
   },
   "sideEffects": ["./auto.js"],
-  "files": ["auto.js", "index.js", "help.js", "hints.js", "auto.d.ts", "index.d.ts"],
+  "files": ["auto.js", "index.js", "help.js", "hints.js", "appearance.js", "auto.d.ts", "index.d.ts"],
   "scripts": {
     "build:website": "node scripts/build-website.js",
     "website": "npm run build:website && node scripts/serve-website.js",

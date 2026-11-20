@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Vimweb documentation — JavaScript and TypeScript</title>
+  <meta name="description" content="Install Vimweb, add keyboard hints to your site, match its theme, and look up the JavaScript and TypeScript API.">
+  <link rel="canonical" href="{{HOMEPAGE}}docs/">
+  <link rel="icon" href="../favicon.png" type="image/png">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="./docs.css">
+  <script type="module" src="../lib/auto.js"></script>
+  <script type="module" src="./docs.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to documentation</a>
+  <header class="masthead wrap docs-header" id="top">
+    <a class="brand" href="../" aria-label="Vimweb home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      Vimweb
+    </a>
+    <nav aria-label="Project links">
+      <a href="../demo/">Demo</a>
+      <a href="https://www.npmjs.com/package/@mhariri/vimweb">npm</a>
+      <a href="https://github.com/mohsenhariri/vimweb">GitHub</a>
+      <button class="settings" type="button" data-vim-nav-launcher hidden>Shortcuts</button>
+    </nav>
+  </header>
+
+  <div class="docs-layout wrap">
+    <aside class="docs-sidebar">
+      <nav aria-label="Documentation sections">
+        <p>Getting started</p>
+        <ul>
+          <li><a href="#quick-start">Quick start</a></li>
+          <li><a href="#installation">Installation</a></li>
+          <li><a href="#commands">Keyboard commands</a></li>
+        </ul>
+        <p>Guides</p>
+        <ul>
+          <li><a href="#appearance">Templates and colors</a></li>
+          <li><a href="#light-and-dark">Light and dark mode</a></li>
+          <li><a href="#integration">App integration</a></li>
+          <li><a href="#accessibility">Accessibility and focus</a></li>
+        </ul>
+        <p>Reference</p>
+        <ul>
+          <li><a href="#api">API reference</a></li>
+          <li><a href="#options">Options</a></li>
+          <li><a href="#controller">Controller members</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="docs-content" id="main" tabindex="-1">
+      <header class="docs-intro">
+        <p class="eyebrow">JavaScript &amp; TypeScript · v{{VERSION}}</p>
+        <h1>Vimweb documentation</h1>
+        <p class="docs-lede">Let visitors follow a link, press a button, or focus a field by typing its on-screen label. Vimweb runs in the browser and has zero runtime dependencies.</p>
+      </header>
+
+      <section id="quick-start">
+        <h2>Quick start</h2>
+        <p>Install the package in your website project.</p>
+        <pre><code>npm install @mhariri/vimweb</code></pre>
+        <p>Import the automatic entry once in your browser bundle.</p>
+        <pre><code>import "@mhariri/vimweb/auto";</code></pre>
+        <p>Open the <strong>Keyboard shortcuts</strong> button at the end of your page. Check <strong>Enable keyboard shortcuts</strong>, dismiss the guide with <kbd>Esc</kbd>, then press <kbd>f</kbd>. Type the letters next to a link to follow it.</p>
+        <p>Try the same sequence here using the <strong>Shortcuts</strong> button at the top of this page, or <a href="../demo/">open the interactive demo</a>.</p>
+      </section>
+
+      <section id="installation">
+        <h2>Installation</h2>
+        <h3 id="automatic-setup">Automatic setup</h3>
+        <p>The <code>@mhariri/vimweb/auto</code> entry waits for the document, creates the guide launcher, and starts shortcuts off for first-time visitors. It remembers each visitor’s choice in local storage when available and keeps open tabs on the same origin in sync.</p>
+        <p>To place the launcher in a menu or footer, include this button before the automatic entry runs. Vimweb reveals it when ready. Style it with your site's button rules.</p>
+        <pre><code>&lt;button type="button" data-vim-nav-launcher hidden&gt;
+  Keyboard shortcuts
+&lt;/button&gt;</code></pre>
+        <h3 id="plain-html">Plain HTML</h3>
+        <p>After installing the package, copy its JavaScript modules and license into a directory your site serves. Keep the modules together so their relative imports resolve.</p>
+        <pre><code>mkdir -p assets/vimweb
+cp node_modules/@mhariri/vimweb/*.js node_modules/@mhariri/vimweb/LICENSE assets/vimweb/</code></pre>
+        <p>Load the entry with a module script. This example assumes the page sits alongside the <code>assets</code> directory.</p>
+        <pre><code>&lt;script type="module" src="./assets/vimweb/auto.js"&gt;&lt;/script&gt;</code></pre>
+        <p>You can also <a href="../download/{{TARBALL}}" download>download the package archive</a>, unpack it, and copy its JavaScript files and license into the same directory.</p>
+      </section>
+
+      <section id="commands">
+        <h2>Keyboard commands</h2>
+        <table>
+          <thead><tr><th scope="col">Key</th><th scope="col">Action</th></tr></thead>
+          <tbody>
+            <tr><td><kbd>f</kbd></td><td>Label visible links and controls. Type a full label to activate its target.</td></tr>
+            <tr><td><kbd>Backspace</kbd></td><td>Remove the last letter of a partially typed label.</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>Cancel hints or dismiss the guide.</td></tr>
+            <tr><td><kbd>j</kbd> / <kbd>k</kbd></td><td>Scroll down or up by 80 pixels.</td></tr>
+            <tr><td><kbd>g</kbd> <kbd>g</kbd></td><td>Jump to the top. Press lowercase <kbd>g</kbd> twice within 750 milliseconds.</td></tr>
+            <tr><td><kbd>G</kbd></td><td>Jump to the bottom.</td></tr>
+            <tr><td><kbd>?</kbd></td><td>Open the guide and change your shortcut preference.</td></tr>
+          </tbody>
+        </table>
+        <p>Scroll commands act on the focused scrollable region, or on the page when focus is outside a scrollable region. A hint on a text field or select moves focus there so the visitor can type or choose an option.</p>
+      </section>
+
+      <section id="appearance">
+        <h2>Templates and colors</h2>
+        <p>Choose the shape of your guide and hint labels independently from their colors. Set these attributes on <code>&lt;html&gt;</code> for either entry point.</p>
+        <pre><code>&lt;html lang="en" data-vim-nav-template="terminal"
+      data-vim-nav-palette="forest"&gt;</code></pre>
+        <table>
+          <thead><tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Default</th></tr></thead>
+          <tbody>
+            <tr><td><code>data-vim-nav-template</code></td><td><code>classic</code> has raised keycaps, <code>minimal</code> has flat keys and rounded labels, and <code>terminal</code> has a monospace guide and square labels.</td><td><code>classic</code></td></tr>
+            <tr><td><code>data-vim-nav-palette</code></td><td><code>amber</code>, <code>ocean</code>, <code>forest</code></td><td><code>amber</code></td></tr>
+            <tr><td><code>data-vim-nav-mode</code></td><td><code>auto</code>, <code>light</code>, <code>dark</code></td><td><code>auto</code></td></tr>
+          </tbody>
+        </table>
+        <p><a href="../demo/">Preview the templates and palettes</a> with real hint labels and controls.</p>
+        <h3 id="light-and-dark">Follow a light or dark site theme</h3>
+        <p>Leave the mode on <code>auto</code>. Vimweb follows the CSS <code>color-scheme</code> on <code>html</code> or <code>body</code>, or a <code>&lt;meta name="color-scheme"&gt;</code> declaration in the head. On a page without a declared scheme, it follows the visitor's system preference.</p>
+        <p>If your switch sets a class or data attribute, declare the scheme in the same CSS rule. The open guide, hint labels, and native form controls will follow the switch.</p>
+        <pre><code>:root { color-scheme: light dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }</code></pre>
+        <h3 id="custom-colors">Customize individual colors</h3>
+        <p>Set custom properties on <code>html</code> or <code>body</code>. The guide uses <code>--vim-nav-surface</code>, <code>--vim-nav-text</code>, <code>--vim-nav-border</code>, and <code>--vim-nav-accent</code>. Hints use <code>--vim-nav-hint-bg</code> and <code>--vim-nav-hint-text</code>. Set text and background colors together to keep labels readable.</p>
+        <pre><code>:root {
+  --vim-nav-hint-bg: light-dark(#18304e, #cfe7ff);
+  --vim-nav-hint-text: light-dark(white, #102439);
+}</code></pre>
+        <p>Use <code>--vim-nav-color-scheme: light</code> or <code>dark</code> to choose a scheme just for Vimweb while its mode is <code>auto</code>.</p>
+        <h3 id="live-appearance">Change appearance from JavaScript</h3>
+        <p>A controller's appearance options override the corresponding HTML attributes. Update just the fields you want to change, including while a visitor is typing a hint. Set a field to <code>undefined</code> to use its HTML value or default again.</p>
+        <pre><code>import { createVimNav } from "@mhariri/vimweb";
+
+const nav = createVimNav({
+  appearance: { template: "minimal", palette: "ocean" }
+});
+
+nav.setAppearance({ mode: "dark" });
+nav.setAppearance({ mode: undefined });</code></pre>
+      </section>
+
+      <section id="integration">
+        <h2>App integration</h2>
+        <p>Choose the core entry, <code>@mhariri/vimweb</code>, when your app owns the settings UI or page lifecycle. The import is side-effect free. Create one controller per document, in the browser, once the body exists. Use either core setup or automatic setup for that document.</p>
+        <h3 id="mount-and-unmount">Mount and unmount a controller</h3>
+        <p>This example wires an existing settings button to the guide. The app keeps its own <kbd>?</kbd> binding and gives its editor full control of the keyboard.</p>
+        <pre><code>import { createVimNav } from "@mhariri/vimweb";
+
+export function mountKeyboardSettings(button) {
+  const nav = createVimNav({
+    enabled: false,
+    disabledKeys: ["?"],
+    exclude: ".code-editor"
+  });
+
+  button.addEventListener("click", nav.showHelp);
+
+  return () =&gt; {
+    button.removeEventListener("click", nav.showHelp);
+    nav.destroy();
+  };
+}</code></pre>
+        <p>Call the returned function when unmounting the page. To save the preference in your own settings store, pass <code>onEnabledChange</code> and use the saved boolean as <code>enabled</code> on the next mount.</p>
+      </section>
+
+      <section id="accessibility">
+        <h2>Accessibility and focus</h2>
+        <p>The guide uses a native modal dialog and returns focus to the opening control on dismissal. Scroll commands honor the visitor's reduced-motion preference.</p>
+        <h3 id="keyboard-ownership">Give components their own keys</h3>
+        <p>Text fields, editable content, dialogs, and focused widgets such as comboboxes keep their keyboard interactions. Vimweb also yields during text composition and modifier shortcuts. To claim a key in another component, call <code>event.preventDefault()</code> before the event bubbles to the document.</p>
+        <p>Reserve commands globally with <code>disabledKeys</code>, or mark a whole region with <code>data-vim-nav-ignore</code> so Vimweb skips its targets and leaves its focused controls alone.</p>
+        <pre><code>&lt;section data-vim-nav-ignore aria-label="Code editor"&gt;
+  &lt;textarea aria-label="Source code"&gt;&lt;/textarea&gt;
+&lt;/section&gt;</code></pre>
+        <h3 id="components-and-frames">Web components and frames</h3>
+        <p>Hints reach visible controls in the document, open shadow roots, and slots. For a closed shadow root, expose the action on a focusable host. Give controls accessible names and use native links, buttons, and form fields where possible.</p>
+        <p>A same-origin iframe can have a controller of its own. After the frame loads, pass its <code>contentDocument</code> as the <code>document</code> option. Each frame owns its own installation and cleanup.</p>
+      </section>
+
+      <section id="api">
+        <h2>API reference</h2>
+        <h3 id="create-vim-nav"><code>createVimNav(options?)</code></h3>
+        <pre><code>import { createVimNav } from "@mhariri/vimweb";
+import type { VimNav, VimNavOptions, VimNavAppearance, VimNavKey }
+  from "@mhariri/vimweb";</code></pre>
+        <p>The factory accepts <code>VimNavOptions</code> and returns a <code>VimNav</code> controller. All options are optional.</p>
+        <h3 id="options">Options</h3>
+        <dl>
+          <dt id="option-enabled"><code>enabled?: boolean</code></dt>
+          <dd>Initial shortcut state. Defaults to <code>true</code> for the core factory. The automatic entry starts off until the visitor opts in.</dd>
+          <dt id="option-alphabet"><code>alphabet?: string</code></dt>
+          <dd>Letters used to build hint labels, in order. Supply at least two distinct lowercase ASCII letters with no duplicates. The default is <code>asdfghjklqwertyuiopzxcvbnm</code>.</dd>
+          <dt id="option-disabled-keys"><code>disabledKeys?: readonly VimNavKey[]</code></dt>
+          <dd>Commands reserved by your page. Defaults to an empty array. A <code>VimNavKey</code> is one of <code>"f"</code>, <code>"j"</code>, <code>"k"</code>, <code>"gg"</code>, <code>"G"</code>, or <code>"?"</code>.</dd>
+          <dt id="option-exclude"><code>exclude?: string</code></dt>
+          <dd>A CSS selector for subtrees that own keyboard interaction, such as <code>".editor, .map"</code>. Targets in matching regions are also excluded from hints.</dd>
+          <dt id="option-document"><code>document?: Document</code></dt>
+          <dd>The browser document to install into. Defaults to the current document.</dd>
+          <dt id="option-on-enabled-change"><code>onEnabledChange?: (enabled: boolean) =&gt; void</code></dt>
+          <dd>Called with the new state when the guide or app enables or disables shortcuts.</dd>
+          <dt id="option-appearance"><code>appearance?: VimNavAppearance</code></dt>
+          <dd>Optional <code>template</code>, <code>palette</code>, and <code>mode</code> fields. Each uses the corresponding <a href="#appearance">appearance choices and defaults</a>.</dd>
+        </dl>
+        <h3 id="controller">Controller members</h3>
+        <dl>
+          <dt id="enabled"><code>readonly enabled: boolean</code></dt>
+          <dd>The current shortcut state.</dd>
+          <dt id="enable"><code>enable(): void</code></dt>
+          <dd>Enable shortcuts for the document.</dd>
+          <dt id="disable"><code>disable(): void</code></dt>
+          <dd>Disable shortcuts and dismiss active hints. The settings guide stays available.</dd>
+          <dt id="show-hints"><code>showHints(): void</code></dt>
+          <dd>Open hints from a toolbar or command palette. It respects the shortcut state, a reserved <kbd>f</kbd> command, current focus, and modal dialogs.</dd>
+          <dt id="show-help"><code>showHelp(): void</code></dt>
+          <dd>Open the shortcut guide and its enable checkbox, including when shortcuts are off.</dd>
+          <dt id="set-appearance"><code>setAppearance(patch: VimNavAppearance): void</code></dt>
+          <dd>Update selected appearance fields in place. An open guide keeps its focus and an active hint keeps the letters already entered.</dd>
+          <dt id="destroy"><code>destroy(): void</code></dt>
+          <dd>Remove listeners, hints, and the guide, and release the document so another controller can be installed.</dd>
+        </dl>
+      </section>
+    </main>
+  </div>
+  <footer class="site-footer wrap">
+    <span>Vimweb documentation · v{{VERSION}}</span>
+    <div><a href="../">Home</a><a href="../lib/LICENSE">MIT license</a><a href="#top">Back to top</a></div>
+  </footer>
+</body>
+</html>

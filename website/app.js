@@ -14,8 +14,7 @@ const navigation = createVimNav({
 tryButton.addEventListener('click', () => {
   navigation.enable();
   tryButton.focus({ preventScroll: true });
-  // Let touch and pointer users invoke the same command as a physical f key.
-  tryButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', bubbles: true, cancelable: true }));
+  navigation.showHints();
 });
 settings.addEventListener('click', () => {
   settings.focus({ preventScroll: true });

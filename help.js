@@ -8,41 +8,55 @@ const commands = [
 ];
 
 const styles = `
-  :host { color-scheme: var(--vim-nav-color-scheme, light dark); }
   dialog {
     box-sizing: border-box;
     width: min(25rem, calc(100% - 2rem));
     max-height: calc(100% - 2rem);
     overflow: auto;
     padding: 1.25rem;
-    border: 1px solid ButtonBorder;
+    border: 1px solid var(--vim-nav-border, var(--_border));
     border-radius: .65rem;
-    background: Canvas;
-    color: CanvasText;
+    background: var(--vim-nav-surface, var(--_surface));
+    color: var(--vim-nav-text, var(--_text));
+    box-shadow: 0 .5rem 2rem rgb(0 0 0 / 20%);
     font: 1rem/1.5 system-ui, sans-serif;
     text-align: start;
   }
   dialog::backdrop { background: rgb(0 0 0 / 48%); }
   h2 { margin: 0 0 1rem; font-size: 1.25rem; }
   label { display: flex; align-items: center; gap: .6rem; cursor: pointer; }
-  input { width: 1.1rem; height: 1.1rem; margin: 0; }
-  dl { display: grid; grid-template-columns: max-content 1fr; gap: .45rem .9rem; }
+  input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--vim-nav-accent, var(--_accent)); }
+  dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .5rem .9rem; }
   dt, dd { margin: 0; }
-  kbd { font: 600 .9rem ui-monospace, monospace; }
+  kbd {
+    padding: .05em .35em; border: 1px solid var(--vim-nav-border, var(--_border));
+    border-bottom-width: 2px; border-radius: .25rem; font: 600 .9rem ui-monospace, monospace;
+  }
   button {
     font: inherit; padding: .35rem .9rem; border-radius: .3rem;
-    color: ButtonText; background: ButtonFace; border: 1px solid ButtonBorder; cursor: pointer;
+    color: inherit; background: transparent; border: 1px solid var(--vim-nav-border, var(--_border)); cursor: pointer;
   }
-  :focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--vim-nav-accent, var(--_accent)); outline-offset: 2px; }
+  :host([data-template="minimal"]) dialog { border-radius: 1rem; padding: 1.5rem; }
+  :host([data-template="minimal"]) kbd { padding: 0; border: 0; color: var(--vim-nav-accent, var(--_accent)); }
+  :host([data-template="minimal"]) button { border-radius: 2rem; }
+  :host([data-template="terminal"]) dialog { border-radius: 0; font-family: ui-monospace, monospace; }
+  :host([data-template="terminal"]) h2 {
+    padding-bottom: .5rem; border-bottom: 2px solid var(--vim-nav-accent, var(--_accent));
+  }
+  :host([data-template="terminal"]) kbd { padding: 0; border: 0; }
+  :host([data-template="terminal"]) button { border-radius: 0; }
+  @media (forced-colors: active) {
+    dialog, button, kbd { border-color: ButtonText; }
+    :focus-visible { outline-color: Highlight; }
+  }
 `;
 
-export function showShortcutHelp(doc, { enabled, disabledKeys, onToggle, onClose }) {
+export function createShortcutHelp(doc, { enabled, disabledKeys, appearance, onToggle, onClose }) {
   const host = doc.createElement("div");
   host.setAttribute("data-vim-nav-help", "");
   const root = host.attachShadow({ mode: "open" });
-  const sheet = new doc.defaultView.CSSStyleSheet();
-  sheet.replaceSync(styles);
-  root.adoptedStyleSheets = [sheet];
+  const releaseAppearance = appearance.mount(host, styles, close);
 
   const dialog = doc.createElement("dialog");
   const title = doc.createElement("h2");
@@ -85,23 +99,26 @@ export function showShortcutHelp(doc, { enabled, disabledKeys, onToggle, onClose
   dialog.addEventListener("close", close);
   dialog.append(title, label, list, done);
   root.append(dialog);
-  doc.body.append(host);
-  dialog.showModal();
-  // A client-side navigation can replace the containing body while help is open.
-  const removal = new doc.defaultView.MutationObserver(() => {
-    if (!host.isConnected) close();
-  });
-  removal.observe(doc.body, { childList: true });
-  removal.observe(doc.documentElement, { childList: true });
   let closed = false;
+
+  function open() {
+    try {
+      doc.body.append(host);
+      dialog.showModal();
+    } catch (error) {
+      close();
+      throw error;
+    }
+  }
 
   function close() {
     if (closed) return;
     closed = true;
-    removal.disconnect();
+    releaseAppearance();
+    // Restoring focus may synchronously open another dialog.
+    onClose();
     if (dialog.open) dialog.close();
     host.remove();
-    onClose();
   }
-  return { close, setEnabled(value) { toggle.checked = value; } };
+  return { open, close, setEnabled(value) { toggle.checked = value; } };
 }

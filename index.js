@@ -1,5 +1,6 @@
-import { showShortcutHelp } from './help.js';
-import { startHints } from './hints.js';
+import { createAppearance } from './appearance.js';
+import { createShortcutHelp } from './help.js';
+import { parentOf, startHints } from './hints.js';
 
 const installations = new WeakSet();
 const commands = ['f', 'j', 'k', 'gg', 'G', '?'];
@@ -21,13 +22,9 @@ function activeElement(doc) {
   return element;
 }
 
-function parentOf(element) {
-  return element.assignedSlot || element.parentElement || element.getRootNode().host;
-}
-
 function hasGuardedFocus(event, doc, selector) {
   const guarded = element => element.isContentEditable || element.matches(selector);
-  if (doc.designMode === 'on' || event.composedPath().some(node => node.nodeType === 1 && guarded(node))) {
+  if (doc.designMode === 'on' || event?.composedPath().some(node => node.nodeType === 1 && guarded(node))) {
     return true;
   }
   // A host can dispatch document-level keys while focus remains inside a widget.
@@ -96,6 +93,7 @@ export function createVimNav(options = {}) {
   }
   if (installations.has(doc)) throw new Error('Vim navigation is already installed on this document');
 
+  const appearance = createAppearance(doc, options.appearance);
   const view = doc.defaultView;
   const listeners = new view.AbortController();
   const signal = listeners.signal;
@@ -124,11 +122,16 @@ export function createVimNav(options = {}) {
     onEnabledChange?.(enabled);
   }
 
+  function openHints() {
+    hints = startHints(doc, { alphabet, exclude, appearance }, () => { hints = null; });
+  }
+
   function showHelp() {
-    if (signal.aborted || help) return;
+    if (signal.aborted || help || !doc.body) return;
     cancelPending();
-    help = showShortcutHelp(doc, {
+    help = createShortcutHelp(doc, {
       enabled,
+      appearance,
       disabledKeys: [...disabled],
       onToggle() {
         setEnabled(!enabled);
@@ -136,6 +139,8 @@ export function createVimNav(options = {}) {
       },
       onClose() { help = null; },
     });
+    // Native dialog autofocus can synchronously call back into this controller.
+    help.open();
   }
 
   function onKeyDown(event) {
@@ -163,7 +168,7 @@ export function createVimNav(options = {}) {
     if (key === 'g' && !pendingG) {
       prefixTimer = view.setTimeout(clearPrefix, 750);
     } else if (key === 'f') {
-      hints = startHints(doc, { alphabet, exclude }, () => { hints = null; });
+      openHints();
     } else if (key === '?') {
       showHelp();
     } else {
@@ -184,6 +189,12 @@ export function createVimNav(options = {}) {
     get enabled() { return enabled; },
     enable() { setEnabled(true); },
     disable() { setEnabled(false); },
+    setAppearance(patch) { if (!signal.aborted) appearance.set(patch); },
+    showHints() {
+      if (!enabled || help || hints || disabled.has('f') || hasGuardedFocus(null, doc, selector)) return;
+      clearPrefix();
+      openHints();
+    },
     showHelp,
     destroy() {
       if (signal.aborted) return;
