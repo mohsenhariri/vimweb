@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vimweb demo</title>
+  <style>
+    :root { color-scheme: light dark; font: 1.05rem/1.6 system-ui, sans-serif; }
+    body { max-width: 38rem; margin: 8vh auto; padding: 0 1.25rem; }
+    h1 { line-height: 1.15; }
+    textarea { box-sizing: border-box; display: block; width: 100%; padding: .6rem; font: inherit; }
+    button, summary { cursor: pointer; }
+    button { padding: .4rem .8rem; font: inherit; }
+    section { margin-block: 2rem; }
+    :focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
+  </style>
+  <script type="module" src="../auto.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Vimweb demo</h1>
+    <p>Enable keyboard shortcuts, close the guide, and press <kbd>f</kbd>. Type the label next to the footnote to follow it, or choose the notes field and start typing.</p>
+    <button type="button" data-vim-nav-launcher hidden>Keyboard shortcuts</button>
+    <section>
+      <h2 id="reading">Reading with hints</h2>
+      <p>A hint gives a link a short, temporary name. You can jump directly to this <a href="#footnote">footnote</a> without counting Tab presses.</p>
+      <details><summary>How long does a label last?</summary><p>Labels stay fixed while you type. Press <kbd>Escape</kbd> to dismiss them and <kbd>f</kbd> to label the current view again.</p></details>
+    </section>
+    <label for="notes">Your notes</label>
+    <textarea id="notes" rows="3"></textarea>
+    <section id="footnote" tabindex="-1">
+      <h2>Footnote</h2>
+      <p>The browser followed an ordinary link. <a href="#reading">Back to reading</a></p>
+    </section>
+  </main>
+</body>
+</html>

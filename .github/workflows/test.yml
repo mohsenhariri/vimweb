@@ -1,0 +1,23 @@
+name: Package checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm test
+      - name: Install the release archive in a clean project
+        run: |
+          archive=$(npm pack --silent --pack-destination "$RUNNER_TEMP")
+          cd "$(mktemp -d)"
+          npm init --yes
+          npm install --offline --ignore-scripts "$RUNNER_TEMP/$archive"
+          node --input-type=module -e "import {createVimNav} from 'vimweb'; import 'vimweb/auto'; if (typeof createVimNav !== 'function') process.exit(1)"

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f8f7ef">
+  <title>Vimweb — Keyboard navigation for websites</title>
+  <meta name="description" content="Give links and buttons short keyboard labels. Try Vimweb on this page, learn the keys, and add it to your own website.">
+  <meta property="og:title" content="Vimweb — Keyboard navigation for websites">
+  <meta property="og:description" content="Type a label to follow a link. Try the keyboard controls and get the package for your own site.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="./favicon.png" type="image/png">
+  <link rel="preload" href="./fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="./fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="masthead wrap" id="top">
+    <a class="brand" href="#top" aria-label="Vimweb home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      Vimweb
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#keys">Key guide</a>
+      <a href="#install">Install</a>
+      <button type="button" class="settings" data-settings hidden aria-haspopup="dialog"><span class="keyboard-icon" aria-hidden="true">⌨</span> Settings</button>
+    </nav>
+  </header>
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="headline">
+      <div class="intro">
+        <p class="eyebrow"><span aria-hidden="true"></span> Keyboard navigation for websites</p>
+        <h1 id="headline">Navigate<br><em>by letter.</em></h1>
+        <p class="lede">Give links and buttons short keyboard labels. Type the label beside a link to follow it, or beside a field to start writing.</p>
+        <div class="hero-actions">
+          <button type="button" class="button try" data-try hidden><kbd aria-hidden="true">f</kbd> <span>Try the hints</span></button>
+          <a class="text-link" href="#install">Add to your site</a>
+        </div>
+        <p class="try-status" role="status" id="try-status"></p>
+      </div>
+      <figure class="study" aria-label="Illustrated keyboard commands">
+        <div class="plate">
+          <span class="registration tl" aria-hidden="true"></span><span class="registration tr" aria-hidden="true"></span>
+          <span class="registration bl" aria-hidden="true"></span><span class="registration br" aria-hidden="true"></span>
+          <img id="key-print" src="./key-study.png" alt="An F key lifted above its mechanical switch, between D and G." width="960" height="600">
+          <canvas id="key-study" role="img" aria-label="The F key lifted above its mechanical switch." hidden></canvas>
+        </div>
+        <figcaption>
+          <div class="study-caption" aria-live="polite"><strong id="study-keys">f</strong><span class="slash" aria-hidden="true">/</span><span id="study-caption">Show hints</span></div>
+          <div class="study-select" aria-label="Choose a key illustration" role="group" hidden>
+            <button type="button" data-study="f" aria-label="Illustrate hint key" aria-pressed="true">f</button>
+            <button type="button" data-study="j" aria-label="Illustrate scroll keys" aria-pressed="false">j</button>
+            <button type="button" data-study="g" aria-label="Illustrate jump keys" aria-pressed="false">g</button>
+          </div>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="key-section wrap" id="keys" aria-labelledby="keys-title">
+      <header class="section-intro">
+        <h2 id="keys-title">The key guide<span class="period">.</span></h2>
+        <p>Use these keys while reading. Text fields keep their usual typing behavior, and you can turn shortcuts off in the guide.</p>
+      </header>
+      <dl class="key-list">
+        <div class="key-row"><dt><kbd>f</kbd></dt><dd><strong>Follow a hint</strong><span>Type a displayed label to activate its link or control.</span></dd></div>
+        <div class="key-row"><dt><kbd>j</kbd><kbd>k</kbd></dt><dd><strong>Scroll down or up</strong><span>Scroll the page or the panel that has focus.</span></dd></div>
+        <div class="key-row"><dt><kbd>gg</kbd><kbd>G</kbd></dt><dd><strong>Jump to either end</strong><span>Type g twice for the top. Use Shift + g for the bottom.</span></dd></div>
+        <div class="key-row"><dt><kbd>Esc</kbd><kbd>⌫</kbd></dt><dd><strong>Cancel or correct a hint</strong><span>Escape dismisses the labels. Backspace edits what you typed.</span></dd></div>
+        <div class="key-row"><dt><kbd>?</kbd></dt><dd><strong>Open the shortcut guide</strong><span>Review the commands and change your shortcut preference.</span></dd></div>
+      </dl>
+    </section>
+
+    <section class="installation" id="install" aria-labelledby="install-title">
+      <div class="wrap install-inner">
+        <header class="section-intro">
+          <h2 id="install-title">On your site<span class="period">.</span></h2>
+          <p>Vimweb ships as a small JavaScript module with zero runtime dependencies. Visitors choose whether to enable shortcuts.</p>
+          <a class="button download" download href="./download/{{TARBALL}}">Download v{{VERSION}} <span class="format">.tgz</span></a>
+        </header>
+        <div class="install-examples">
+          <div class="install-tabs" hidden role="tablist" aria-label="Installation method">
+            <button type="button" role="tab" aria-selected="true" aria-controls="bundler" id="tab-bundler">With npm</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="html-example" id="tab-html" tabindex="-1">Plain HTML</button>
+          </div>
+          <section class="example" id="bundler">
+            <h3 class="fallback-title">With npm</h3>
+            <p>Install Vimweb from npm.</p>
+            <div class="code-line"><pre><code>npm install vimweb</code></pre><button type="button" data-copy hidden aria-label="Copy install command">Copy</button></div>
+            <p>Import the automatic setup in your browser entry file.</p>
+            <div class="code-line"><pre><code>import "vimweb/auto";</code></pre><button type="button" data-copy hidden aria-label="Copy JavaScript import">Copy</button></div>
+          </section>
+          <section class="example" id="html-example">
+            <h3 class="fallback-title">Plain HTML</h3>
+            <p>Unpack the archive. Copy its JavaScript files and license into a <code>vimweb/</code> folder alongside your HTML file.</p>
+            <div class="code-line"><pre><code>&lt;script type="module"
+  src="./vimweb/auto.js"&gt;&lt;/script&gt;</code></pre><button type="button" data-copy hidden aria-label="Copy HTML script tag">Copy</button></div>
+            <p>The module adds a <b>Keyboard shortcuts</b> button at the end of the page.</p>
+          </section>
+          <span id="copy-status" class="sr-only" role="status"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer wrap">
+    <span>Vimweb <span class="footer-separator">/</span> <a href="https://mohsenhariri.github.io/">Mohsen Hariri</a></span>
+    <div><a href="https://github.com/mohsenhariri/vimweb">GitHub</a><a href="./lib/LICENSE" download="vimweb-LICENSE.txt">MIT license</a><a href="https://mohsenhariri.github.io/vimcode/">VimCode for VS Code</a></div>
+  </footer>
+</body>
+</html>

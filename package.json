@@ -1,0 +1,36 @@
+{
+  "name": "vimweb",
+  "version": "0.1.0",
+  "description": "Vim-style keyboard navigation and link hints for websites",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": { "types": "./index.d.ts", "import": "./index.js" },
+    "./auto": { "types": "./auto.d.ts", "import": "./auto.js" }
+  },
+  "sideEffects": ["./auto.js"],
+  "files": ["auto.js", "index.js", "help.js", "hints.js", "auto.d.ts", "index.d.ts"],
+  "scripts": {
+    "build:website": "node scripts/build-website.js",
+    "website": "npm run build:website && node scripts/serve-website.js",
+    "demo": "node test/serve.js",
+    "test": "playwright test"
+  },
+  "keywords": ["keyboard", "navigation", "vim", "link-hints", "accessibility"],
+  "author": "Mohsen Hariri",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohsenhariri/vimweb.git"
+  },
+  "homepage": "https://github.com/mohsenhariri/vimweb#readme",
+  "bugs": {
+    "url": "https://github.com/mohsenhariri/vimweb/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": { "@playwright/test": "1.65.1" }
+}
