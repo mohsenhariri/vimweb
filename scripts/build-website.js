@@ -32,7 +32,10 @@ try {
   }
   const index = path.join(stage, 'index.html');
   const html = await readFile(index, 'utf8');
-  await writeFile(index, html.replaceAll('{{VERSION}}', manifest.version).replaceAll('{{TARBALL}}', archive));
+  await writeFile(index, html
+    .replaceAll('{{VERSION}}', manifest.version)
+    .replaceAll('{{TARBALL}}', archive)
+    .replaceAll('{{HOMEPAGE}}', manifest.homepage));
 
   // Keep a failed build from replacing the last complete preview.
   await rm(dist, { recursive: true, force: true });
