@@ -2,7 +2,11 @@
 
 Add Vim-style keyboard navigation to a website. Press `f` to label visible links and controls, then type a label to follow a link, press a button, or focus a field. Vimweb runs entirely in the browser and has zero runtime dependencies.
 
-[Documentation](https://mohsenhariri.github.io/vimweb/docs/) · [Interactive demo](https://mohsenhariri.github.io/vimweb/demo/) · [Homepage](https://mohsenhariri.github.io/vimweb/)
+- [Homepage](https://mohsenhariri.github.io/vimweb/)
+- [Documentation](https://mohsenhariri.github.io/vimweb/docs/)
+- [Demo](https://mohsenhariri.github.io/vimweb/demo/)
+- [npm package](https://www.npmjs.com/package/@mhariri/vimweb)
+- [Live example on Mohsen Hariri’s website](https://mohsenhariri.github.io/)
 
 ## Add it to a website
 
