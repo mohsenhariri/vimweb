@@ -25,7 +25,7 @@ try {
   if (archives.length !== 1 || !archives[0].endsWith('.tgz')) throw new Error('Expected npm pack to create one .tgz file.');
   const [archive] = archives;
   const lib = path.join(stage, 'lib');
-  for (const filename of [...manifest.files.filter(name => name.endsWith('.js')), 'LICENSE']) {
+  for (const filename of [...manifest.files.filter(name => !name.endsWith('.d.ts')), 'LICENSE']) {
     const destination = path.join(lib, filename);
     await mkdir(path.dirname(destination), { recursive: true });
     await copyFile(path.join(root, filename), destination);
@@ -33,7 +33,9 @@ try {
   const demo = path.join(stage, 'demo');
   await mkdir(demo);
   const demoHtml = await readFile(path.join(root, 'demo', 'index.html'), 'utf8');
-  await writeFile(path.join(demo, 'index.html'), demoHtml.replace('src="../auto.js"', 'src="../lib/auto.js"'));
+  await writeFile(path.join(demo, 'index.html'), demoHtml
+    .replace('src="../auto.js"', 'src="../lib/auto.js"')
+    .replace('href="../assets/badge.css"', 'href="../lib/assets/badge.css"'));
   for (const page of ['index.html', 'docs/index.html']) {
     const index = path.join(stage, page);
     const html = await readFile(index, 'utf8');

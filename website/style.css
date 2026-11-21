@@ -140,10 +140,10 @@ b { font-weight: 625; }
 }
 @media (max-width: 43rem) {
   .wrap { width: calc(100% - 2.5rem); }
-  .masthead { min-height: 4.2rem; }
+  .masthead { min-height: 4.2rem; flex-wrap: wrap; row-gap: .7rem; padding-block: .75rem; }
   .brand { font-size: 1.43rem; gap: .38rem; }
   .brand-mark { transform: scale(.82); transform-origin: left center; width: 1.6rem; }
-  .masthead nav { gap: .95rem; font-size: .88rem; }
+  .masthead nav { flex-wrap: wrap; gap: .55rem .95rem; font-size: .88rem; }
   .settings { padding: .4rem .55rem; }
   .keyboard-icon { display: none; }
   .hero, .key-section, .install-inner { grid-template-columns: 1fr; }

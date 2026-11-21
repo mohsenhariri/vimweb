@@ -1,11 +1,18 @@
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
+import { extname } from 'node:path';
 import manifest from '../package.json' with { type: 'json' };
 
 const root = new URL('../', import.meta.url);
+const mime = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.webp': 'image/webp',
+};
 const files = new Set([
   '/test/fixture.html', '/demo/index.html',
-  ...manifest.files.filter(name => name.endsWith('.js')).map(name => '/' + name),
+  ...manifest.files.filter(name => Object.hasOwn(mime, extname(name))).map(name => '/' + name),
 ]);
 const port = Number(process.argv[2] || 8000);
 
@@ -18,8 +25,7 @@ createServer(async (request, response) => {
   }
   try {
     const content = await readFile(new URL(`.${file}`, root));
-    const type = file.endsWith('.js') ? 'text/javascript' : 'text/html';
-    response.writeHead(200, { 'Content-Type': `${type}; charset=utf-8` }).end(content);
+    response.writeHead(200, { 'Content-Type': mime[extname(file)] }).end(content);
   } catch (error) {
     if (error.code !== 'ENOENT') console.error(error);
     response.writeHead(error.code === 'ENOENT' ? 404 : 500).end();

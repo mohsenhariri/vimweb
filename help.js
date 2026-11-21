@@ -36,6 +36,8 @@ const styles = `
     font: inherit; padding: .35rem .9rem; border-radius: .3rem;
     color: inherit; background: transparent; border: 1px solid var(--vim-nav-border, var(--_border)); cursor: pointer;
   }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; }
+  a { color: inherit; text-underline-offset: .18em; }
   :focus-visible { outline: 2px solid var(--vim-nav-accent, var(--_accent)); outline-offset: 2px; }
   :host([data-template="minimal"]) dialog { border-radius: 1rem; padding: 1.5rem; }
   :host([data-template="minimal"]) kbd { padding: 0; border: 0; color: var(--vim-nav-accent, var(--_accent)); }
@@ -70,7 +72,7 @@ export function createShortcutHelp(doc, { enabled, disabledKeys, appearance, onT
   toggle.autofocus = true;
   toggle.addEventListener("change", onToggle);
   const label = doc.createElement("label");
-  label.append(toggle, "Enable keyboard shortcuts");
+  label.append(toggle, "Enable vimWeb");
 
   const list = doc.createElement("dl");
   const rows = commands.filter(([key]) => !disabledKeys.includes(key));
@@ -90,6 +92,15 @@ export function createShortcutHelp(doc, { enabled, disabledKeys, appearance, onT
   done.type = "button";
   done.textContent = "Close";
   done.addEventListener("click", close);
+  const projectLink = doc.createElement("a");
+  projectLink.href = "https://github.com/mohsenhariri/vimweb";
+  projectLink.target = "_blank";
+  projectLink.rel = "noopener";
+  projectLink.textContent = "VimWeb";
+  const actions = doc.createElement("div");
+  actions.className = "actions";
+  actions.append(done, projectLink);
+
   // The modal owns keyboard input until it closes, including host-page hotkeys.
   dialog.addEventListener("keydown", event => event.stopPropagation());
   dialog.addEventListener("cancel", (event) => {
@@ -97,7 +108,7 @@ export function createShortcutHelp(doc, { enabled, disabledKeys, appearance, onT
     close();
   });
   dialog.addEventListener("close", close);
-  dialog.append(title, label, list, done);
+  dialog.append(title, label, list, actions);
   root.append(dialog);
   let closed = false;
 

@@ -66,18 +66,21 @@
         <pre><code>npm install @mhariri/vimweb</code></pre>
         <p>Import the automatic entry once in your browser bundle.</p>
         <pre><code>import "@mhariri/vimweb/auto";</code></pre>
-        <p>Open the <strong>Keyboard shortcuts</strong> button at the end of your page. Check <strong>Enable keyboard shortcuts</strong>, dismiss the guide with <kbd>Esc</kbd>, then press <kbd>f</kbd>. Type the letters next to a link to follow it.</p>
+        <p>Open <strong>Keyboard shortcuts</strong> and check <strong>Enable vimWeb</strong> if needed. Dismiss the guide with <kbd>Esc</kbd>, then press <kbd>f</kbd>. Type the letters next to a link to follow it.</p>
         <p>Try the same sequence here using the <strong>Shortcuts</strong> button at the top of this page, or <a href="../demo/">open the interactive demo</a>.</p>
       </section>
 
       <section id="installation">
         <h2>Installation</h2>
         <h3 id="automatic-setup">Automatic setup</h3>
-        <p>The <code>@mhariri/vimweb/auto</code> entry waits for the document, creates the guide launcher, and starts shortcuts off for first-time visitors. It remembers each visitor’s choice in local storage when available and keeps open tabs on the same origin in sync.</p>
-        <p>To place the launcher in a menu or footer, include this button before the automatic entry runs. Vimweb reveals it when ready. Style it with your site's button rules.</p>
+        <p>The <code>@mhariri/vimweb/auto</code> entry uses your launcher or adds a <strong>Keyboard shortcuts</strong> button at the end of the page. It remembers each visitor’s choice in local storage when available and keeps open tabs on the same origin in sync.</p>
+        <p>Put this button in your header or near the top of the page so visitors see it when the page loads. Vimweb reveals it when ready.</p>
         <pre><code>&lt;button type="button" data-vim-nav-launcher hidden&gt;
   Keyboard shortcuts
 &lt;/button&gt;</code></pre>
+        <h3 id="enabled-by-default">Enable shortcuts by default</h3>
+        <p>The automatic entry starts shortcuts off for visitors with no saved preference. To start them enabled, set this attribute on your opening <code>&lt;html&gt;</code> tag. A visitor’s saved choice takes precedence.</p>
+        <pre><code>&lt;html lang="en" data-vim-nav-default-enabled="true"&gt;</code></pre>
         <h3 id="plain-html">Plain HTML</h3>
         <p>After installing the package, copy its JavaScript modules and license into a directory your site serves. Keep the modules together so their relative imports resolve.</p>
         <pre><code>mkdir -p assets/vimweb
@@ -85,6 +88,16 @@ cp node_modules/@mhariri/vimweb/*.js node_modules/@mhariri/vimweb/LICENSE assets
         <p>Load the entry with a module script. This example assumes the page sits alongside the <code>assets</code> directory.</p>
         <pre><code>&lt;script type="module" src="./assets/vimweb/auto.js"&gt;&lt;/script&gt;</code></pre>
         <p>You can also <a href="../download/{{TARBALL}}" download>download the package archive</a>, unpack it, and copy its JavaScript files and license into the same directory.</p>
+        <h3 id="badge">Optional Vimweb badge</h3>
+        <p>Put this launcher in your header or near the top of the page so visitors see it when the page loads. It opens the guide even when shortcuts are off.</p>
+        <pre><code>&lt;button type="button" class="vimweb-badge" data-vim-nav-launcher hidden&gt;
+  Try Vim in this website.
+&lt;/button&gt;</code></pre>
+        <p>Import the stylesheet alongside the automatic entry in your browser bundle.</p>
+        <pre><code>import "@mhariri/vimweb/badge.css";</code></pre>
+        <p>For plain HTML, copy <code>badge.css</code> and <code>badge.webp</code> from the package's <code>assets/</code> directory into the same directory as <code>auto.js</code>, then load the stylesheet in your page's head.</p>
+        <pre><code>&lt;link rel="stylesheet" href="./assets/vimweb/badge.css"&gt;</code></pre>
+        <p>Override <code>.vimweb-badge</code> in your site's stylesheet to match your design. Try the badge in the <a href="../demo/">interactive demo</a>.</p>
       </section>
 
       <section id="commands">
@@ -191,7 +204,7 @@ import type { VimNav, VimNavOptions, VimNavAppearance, VimNavKey }
         <h3 id="options">Options</h3>
         <dl>
           <dt id="option-enabled"><code>enabled?: boolean</code></dt>
-          <dd>Initial shortcut state. Defaults to <code>true</code> for the core factory. The automatic entry starts off until the visitor opts in.</dd>
+          <dd>Initial shortcut state. Defaults to <code>true</code> for the core factory. The automatic entry uses the visitor’s saved choice or the <a href="#enabled-by-default">site default</a>.</dd>
           <dt id="option-alphabet"><code>alphabet?: string</code></dt>
           <dd>Letters used to build hint labels, in order. Supply at least two distinct lowercase ASCII letters with no duplicates. The default is <code>asdfghjklqwertyuiopzxcvbnm</code>.</dd>
           <dt id="option-disabled-keys"><code>disabledKeys?: readonly VimNavKey[]</code></dt>

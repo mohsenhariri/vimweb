@@ -20,13 +20,23 @@ Import the automatic entry once in your browser bundle.
 import "@mhariri/vimweb/auto";
 ```
 
-Visitors get a **Keyboard shortcuts** button at the end of the page. It opens a guide with an **Enable keyboard shortcuts** checkbox. Shortcuts start off, and the site remembers each visitor’s choice in local storage when available.
+The basic setup adds a **Keyboard shortcuts** button at the end of the page. It opens a guide with an **Enable vimWeb** checkbox. Shortcuts start off, and the site remembers each visitor’s choice in local storage when available.
 
-To put the button in your own menu or footer, include this markup. The script reveals it when ready.
+To make the launcher visible when the page loads, put this button in your header or near the top of the page. Vimweb reveals it when ready.
 
 ```html
 <button type="button" data-vim-nav-launcher hidden>Keyboard shortcuts</button>
 ```
+
+### Enable shortcuts by default
+
+With the automatic entry, set this attribute on your opening `<html>` tag to enable shortcuts for visitors with no saved preference.
+
+```html
+<html lang="en" data-vim-nav-default-enabled="true">
+```
+
+Visitors can turn shortcuts off in the guide. Their saved choice takes precedence on later visits.
 
 ### Plain HTML
 
@@ -44,6 +54,30 @@ Load the entry point from a page, adjusting the URL to your site's base path. It
 ```
 
 To try the example directly from this repository, run `npm run demo` in the package directory and open `http://127.0.0.1:8000/`. The demo runs with Node alone.
+
+### Optional Vimweb badge
+
+Put this launcher in your header or near the top of the page so visitors see it when the page loads. It opens the guide even when shortcuts are off.
+
+```html
+<button type="button" class="vimweb-badge" data-vim-nav-launcher hidden>
+  Try Vim in this website.
+</button>
+```
+
+Import the badge stylesheet alongside the automatic entry in your browser bundle.
+
+```js
+import "@mhariri/vimweb/badge.css";
+```
+
+For plain HTML, copy `badge.css` and `badge.webp` from the installed package's `assets/` directory into the same directory as `auto.js`, then load the stylesheet in your page's head.
+
+```html
+<link rel="stylesheet" href="/assets/vimweb/badge.css">
+```
+
+Override `.vimweb-badge` in your site's stylesheet to match your design.
 
 ## Templates, palettes, and dark mode
 
@@ -143,7 +177,7 @@ Help uses a native modal dialog and returns keyboard focus on dismissal. The pac
 
 Run `npm run website` to preview the homepage at `http://127.0.0.1:8000/` and the documentation at `http://127.0.0.1:8000/docs/`. To choose another port, run `npm run website -- 8010`. Both commands work from the package directory with Node.js 24 and npm.
 
-`npm run build:website` creates a static `dist/` directory from `website/`, the browser modules and a fresh npm archive. Serve that directory at the domain root or a project subpath. In the standalone GitHub repository, select **Settings → Pages → Source → GitHub Actions**. The Pages workflow publishes the homepage on pushes to `main` and on manual runs.
+`npm run build:website` creates a static `dist/` directory with the website, browser files and a fresh npm archive. It includes `demo/index.html` at `/demo/`. Serve `dist/` at the domain root or a project subpath. In the standalone GitHub repository, select **Settings → Pages → Source → GitHub Actions**. The Pages workflow publishes the homepage on pushes to `main` and on manual runs.
 
 Use Node.js 24 for development. From the package directory:
 
@@ -154,6 +188,6 @@ npm test
 npm pack --dry-run
 ```
 
-`npm pack` produces a tarball that another project can install with `npm install /path/to/package.tgz`. The published files include the browser modules, TypeScript declarations, README and license. The demo, tests and repository workflow stay in the source repository.
+`npm pack` produces a tarball that another project can install with `npm install /path/to/package.tgz`. The published files include the browser modules, TypeScript declarations, badge assets, README and license. The demo, tests and repository workflow stay in the source repository.
 
 Inspired by [Vimium](https://github.com/philc/vimium) and [VimCode](https://github.com/mohsenhariri/vimcode). Released under the [MIT license](./LICENSE).

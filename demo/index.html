@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-vim-nav-default-enabled="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,6 +19,7 @@
     select { font: inherit; }
     :focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
   </style>
+  <link rel="stylesheet" href="../assets/badge.css">
   <script type="module" src="../auto.js"></script>
   <script type="module">
     const controls = document.querySelector('#appearance');
@@ -35,7 +36,10 @@
 <body>
   <main>
     <h1>Vimweb demo</h1>
-    <p>Enable keyboard shortcuts, close the guide, and press <kbd>f</kbd>. Type the label next to the footnote to follow it, or choose the notes field and start typing.</p>
+    <button type="button" class="vimweb-badge" data-vim-nav-launcher hidden>
+      Try Vim in this website.
+    </button>
+    <p>Press <kbd>f</kbd> to show hints. Type the label next to the footnote to follow it, or choose the notes field and start typing. Use the badge to change your shortcut settings.</p>
     <fieldset id="appearance">
       <legend>Appearance</legend>
       <label>Template
@@ -48,7 +52,6 @@
         <select id="site-mode"><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
       </label>
     </fieldset>
-    <button type="button" data-vim-nav-launcher hidden>Keyboard shortcuts</button>
     <section>
       <h2 id="reading">Reading with hints</h2>
       <p>A hint gives a link a short, temporary name. You can jump directly to this <a href="#footnote">footnote</a> without counting Tab presses.</p>

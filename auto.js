@@ -10,9 +10,11 @@ function isStorageError(error) {
 
 function mount(doc) {
   const win = doc.defaultView;
-  function readPreference() {
+  const defaultEnabled = doc.documentElement.getAttribute("data-vim-nav-default-enabled") === "true";
+  function readEnabled() {
     try {
-      return win.localStorage.getItem(preference) === "true";
+      const saved = win.localStorage.getItem(preference);
+      return saved === null ? defaultEnabled : saved === "true";
     } catch (error) {
       if (!isStorageError(error)) throw error;
     }
@@ -20,7 +22,7 @@ function mount(doc) {
   let syncing = false;
   const navigation = createVimNav({
     document: doc,
-    enabled: readPreference() ?? false,
+    enabled: readEnabled() ?? defaultEnabled,
     onEnabledChange(value) {
       if (syncing) return;
       try {
@@ -31,7 +33,7 @@ function mount(doc) {
     },
   });
   function syncPreference() {
-    const value = readPreference();
+    const value = readEnabled();
     if (value === undefined || value === navigation.enabled) return;
     syncing = true;
     try {

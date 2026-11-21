@@ -24,13 +24,34 @@ async function showHints(page, count) {
   return hints;
 }
 
-test('the standalone demo can opt in and hint its real controls', async ({ page }) => {
+test('the demo starts enabled and lets visitors turn off shortcuts from its visible badge', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 480 });
+  const artwork = page.waitForResponse('**/badge.webp');
   await page.goto('/');
-  await page.getByRole('button', { name: 'Keyboard shortcuts' }).click();
-  await dialog(page).getByRole('checkbox', { name: 'Enable keyboard shortcuts' }).check();
-  await page.keyboard.press('Escape');
+  expect((await artwork).ok()).toBe(true);
+  const badge = page.getByRole('button', { name: 'Try Vim in this website.', exact: true });
+  await expect(badge).toBeInViewport();
   await page.keyboard.press('f');
-  await expect(page.locator(hint).first()).toBeVisible();
+  const hints = page.locator(hint);
+  await expect(hints.first()).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  const toggle = dialog(page).getByRole('checkbox', { name: 'Enable vimWeb', exact: true });
+  await badge.click();
+  await expect(toggle).toBeChecked();
+  await toggle.uncheck();
+  await page.reload();
+  await expect(badge).toBeInViewport();
+  await page.keyboard.press('f');
+  await expect(hints).toHaveCount(0);
+  await badge.click();
+  await expect(toggle).not.toBeChecked();
+
+  await page.evaluate(() => {
+    localStorage.removeItem('vim-nav:enabled');
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+  });
+  await expect(toggle).toBeChecked();
 });
 
 test('offers distinct typeable hints and activates the selected control once', async ({ page }) => {
@@ -310,6 +331,9 @@ test('help opens while disabled, supports keyboard dismissal and restores focus'
   await page.evaluate(() => window.nav.showHelp());
   const help = dialog(page);
   await expect(help).toBeVisible();
+  const project = help.getByRole('link', { name: 'VimWeb', exact: true });
+  await expect(project).toHaveAttribute('href', 'https://github.com/mohsenhariri/vimweb');
+  await expect(project).toHaveAttribute('target', '_blank');
   expect(await help.evaluate(el => el.tagName)).toBe('DIALOG');
   const bounds = await help.boundingBox();
   expect(bounds.x).toBeGreaterThanOrEqual(0);
@@ -321,7 +345,7 @@ test('help opens while disabled, supports keyboard dismissal and restores focus'
   expect(dark[0]).not.toBe(dark[1]);
   await page.emulateMedia({ colorScheme: 'light' });
   await expect.poll(colors).not.toEqual(dark);
-  const switcher = help.getByRole('checkbox', { name: 'Enable keyboard shortcuts' });
+  const switcher = help.getByRole('checkbox', { name: 'Enable vimWeb' });
   await expect(switcher).not.toBeChecked();
   await switcher.check();
   expect(await page.evaluate(() => window.nav.enabled)).toBe(true);
@@ -368,7 +392,7 @@ test('auto entry starts disabled and remembers changes on reload', async ({ page
   await page.goto(`${fixture}?auto`);
   const launcher = page.getByRole('button', { name: 'Keyboard shortcuts', exact: true });
   const help = dialog(page);
-  const switcher = help.getByRole('checkbox', { name: 'Enable keyboard shortcuts' });
+  const switcher = help.getByRole('checkbox', { name: 'Enable vimWeb' });
   await expect(launcher).toBeVisible();
   await page.keyboard.press('?');
   await expect(help).toHaveCount(0);
@@ -394,8 +418,8 @@ test('applies preference changes to another open tab on the same origin', async 
     await tab.goto(`${fixture}?auto`);
     await tab.getByRole('button', { name: 'Keyboard shortcuts' }).click();
   }
-  const firstToggle = dialog(page).getByRole('checkbox', { name: 'Enable keyboard shortcuts' });
-  const secondToggle = dialog(second).getByRole('checkbox', { name: 'Enable keyboard shortcuts' });
+  const firstToggle = dialog(page).getByRole('checkbox', { name: 'Enable vimWeb' });
+  const secondToggle = dialog(second).getByRole('checkbox', { name: 'Enable vimWeb' });
   await expect(secondToggle).not.toBeChecked();
   await firstToggle.check();
   await expect(secondToggle).toBeChecked();
@@ -410,7 +434,7 @@ test('refreshes a restored page from storage after a persisted pageshow', async 
   await page.goto(`${fixture}?auto`);
   await page.getByRole('button', { name: 'Keyboard shortcuts' }).click();
   const help = dialog(page);
-  const toggle = help.getByRole('checkbox', { name: 'Enable keyboard shortcuts' });
+  const toggle = help.getByRole('checkbox', { name: 'Enable vimWeb' });
   await toggle.check();
   // A write in this tab creates a stale in-memory setting without a storage event.
   await page.evaluate(() => localStorage.clear());
@@ -433,6 +457,7 @@ test('link hints preserve native fragment navigation under a subpath', async ({ 
 test('auto entry binds a supplied launcher and works with storage unavailable', async ({ page }) => {
   await page.goto(fixture);
   await page.evaluate(async () => {
+    document.documentElement.setAttribute('data-vim-nav-default-enabled', 'true');
     document.body.innerHTML = '<form><button data-vim-nav-launcher hidden>Shortcut settings</button></form>';
     Object.defineProperty(window, 'localStorage', {
       get() { throw new DOMException('Storage blocked', 'SecurityError'); },
@@ -444,7 +469,9 @@ test('auto entry binds a supplied launcher and works with storage unavailable', 
   await expect(launcher).toBeVisible();
   await launcher.click();
   const help = dialog(page);
-  const toggle = help.getByRole('checkbox', { name: 'Enable keyboard shortcuts' });
+  const toggle = help.getByRole('checkbox', { name: 'Enable vimWeb' });
+  await expect(toggle).toBeChecked();
+  await toggle.uncheck();
   await toggle.check();
   await help.getByRole('button', { name: 'Close' }).click();
   await expect(launcher).toBeFocused();
@@ -553,7 +580,7 @@ test('keeps document-level shortcuts outside help and preserves native keyboard 
   expect(await page.evaluate(() => window.searches)).toBe(1);
   await page.keyboard.press('?');
   const help = dialog(page);
-  const toggle = help.getByRole('checkbox', { name: 'Enable keyboard shortcuts' });
+  const toggle = help.getByRole('checkbox', { name: 'Enable vimWeb' });
   await toggle.focus();
   await page.keyboard.press('/');
   expect(await page.evaluate(() => window.searches)).toBe(1);
